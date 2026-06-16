@@ -1,28 +1,5 @@
-
--- incident_log 
--- sla_targets
-
-
-
-
-SELECT COUNT(*) AS total_metrics FROM performance_metrics;
-SELECT COUNT(*) AS total_incidents FROM incident_log;
-SELECT COUNT(*) AS total_sla_targets FROM sla_targets;
-
-SELECT service_name, COUNT(*) AS records FROM performance_metrics GROUP BY service_name;
-SELECT DATE(timestamp) AS date, COUNT(*) AS records FROM performance_metrics GROUP BY DATE(timestamp);
-
-select * from performance_metrics;
-select * from incident_log;
-select * from sla_targets;
-
-select service_name, timestamp, avg(response_time_ms), avg(api_latency_ms), avg(error_rate_percent) , avg(uptime_percent) from performance_metrics
-group by service_name,timestamp
-order by service_name;
-
-
 -- ============================================================
--- QoS Analyst Case Study — Analysis Queries (run AFTER raw.sql)
+-- QoS Analyst Case Study — Analysis Queries
 -- ============================================================
 
 -- 1) Service performance summary vs SLA targets
@@ -106,18 +83,3 @@ SELECT p.service_name, substr(p.timestamp,1,10) AS day,
       THEN 1 ELSE 0 END) AS breach_hours
 FROM performance_metrics p JOIN sla_targets s ON s.service_name=p.service_name
 GROUP BY p.service_name, day ORDER BY p.service_name, day;
-
-
-
--- ----------------------------------------------------------------------------------------------
-
-
-SELECT count(*)
-FROM performance_metrics p
-JOIN sla_targets s ON s.service_name = p.service_name
-WHERE p.response_time_ms  > s.max_response_time_ms
-   OR p.api_latency_ms    > s.max_api_latency_ms
-   OR p.error_rate_percent> s.max_error_rate_percent
-   OR p.uptime_percent    < s.min_uptime_percent
-ORDER BY p.timestamp, p.service_name;
-
